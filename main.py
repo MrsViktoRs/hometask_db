@@ -60,30 +60,17 @@ def delete_client(conn, client_id):
 
 def find_client(conn, name=None, surname=None, email=None, number=None):
     cur = conn.cursor()
-    if name is None and surname is None and number is None:
-        cur.execute('''SELECT c.*, n.number FROM Clients AS c
-        LEFT JOIN Numbers AS n ON n.id_client = c.id  
-        WHERE email=%s''', (email,))
-        print('fetchall', cur.fetchall())
-        cur.close()
-    elif surname is None and email is None and number is None:
-        cur.execute('''SELECT c.*, n.number FROM Clients AS c
-         LEFT JOIN Numbers AS n ON n.id_client = c.id 
-         WHERE name=%s''', (name,))
-        print('fetchall', cur.fetchall())
-        cur.close()
-    elif name is None and email is None and number is None:
-        cur.execute('''SELECT c.*, n.number FROM Clients AS c
-        LEFT JOIN Numbers AS n ON n.id_client = c.id  
-        WHERE surname=%s''', (surname,))
-        print('fetchall', cur.fetchall())
-        cur.close()
-    elif name is None and surname is None and email is None:
-        cur.execute('''SELECT c.*, n.number FROM Clients AS c
-        LEFT JOIN Numbers AS n ON n.id_client = c.id  
-        WHERE n.number=%s''', (number,))
-        print('fetchall', cur.fetchall())
-        cur.close()
+    cur.execute('''SELECT DISTINCT c.*, n.number FROM Clients AS c
+            LEFT JOIN Numbers AS n ON n.id_client = c.id  
+            WHERE (name=%s OR %s IS NULL)
+            AND (surname=%s OR %s IS NULL)
+            AND (email=%s OR %s IS NULL)
+            AND (n.number=%s OR %s IS NULL)''',
+                (name, name, surname, surname, email, email, number, number))
+    result = cur.fetchall()
+    cur.close()
+    return result
 
 
-with psycopg2.connect(database='employees', user='postgres', password='0509') as conn:
+with psycopg2.connect(database='Наша база', user='Наше имя', password='Пароль') as conn:
+    # Тут вызываем нужные функции
